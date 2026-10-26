@@ -26,7 +26,8 @@ hs_err_pid*
 replay_pid*
 
 # Maven wrapper distribution folder (keep wrapper script & properties, ignore extracted maven)
-.mvn/wrapper/apache-maven-*
+**/.mvn/wrapper/apache-maven-*/
+**/apache-maven-*/
 
 # IDEs and Editors
 .idea/
