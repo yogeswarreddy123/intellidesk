@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tickets — IntelliDesk</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <div id="top-header-container"></div>
+
+      <main class="page-content">
+        <!-- Top header action -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">Service Desk Tickets</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Browse, filter, and track IT support tickets</p>
+          </div>
+          <a href="create-ticket.html" class="btn btn-primary">+ Create Ticket</a>
+        </div>
+
+        <!-- Filter & Search Card -->
+        <div class="card" style="padding: 1.25rem; margin-bottom: 1.25rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end;">
+            <div>
+              <label class="form-label" for="search-input">Search Query</label>
+              <input type="text" id="search-input" class="form-control" placeholder="Search ticket #, title, desc...">
+            </div>
+
+            <div>
+              <label class="form-label" for="status-filter">Status</label>
+              <select id="status-filter" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="OPEN">OPEN</option>
+                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                <option value="PENDING">PENDING</option>
+                <option value="RESOLVED">RESOLVED</option>
+                <option value="CLOSED">CLOSED</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="form-label" for="priority-filter">Priority</label>
+              <select id="priority-filter" class="form-select">
+                <option value="">All Priorities</option>
+                <option value="LOW">LOW</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="HIGH">HIGH</option>
+                <option value="CRITICAL">CRITICAL</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="form-label" for="category-filter">Category</label>
+              <select id="category-filter" class="form-select">
+                <option value="">All Categories</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tickets Table Card -->
+        <div class="card">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ticket</th>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Created By</th>
+                  <th>Assigned To</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="tickets-tbody">
+                <tr><td colspan="8" style="text-align: center; padding: 2rem;">Loading tickets...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination">
+            <div id="pagination-info" style="font-size: 0.85rem; color: var(--text-muted);">
+              Showing page 1 of 1
+            </div>
+            <div id="pagination-controls" class="pagination-controls"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/tickets.js"></script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Details — IntelliDesk</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <div id="top-header-container"></div>
+
+      <main class="page-content">
+        <!-- Back Navigation & Title -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <a href="tickets.html" class="btn btn-sm btn-outline">← Back to Tickets</a>
+            <h2 id="ticket-number-heading" style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">INC-10000</h2>
+            <span id="ticket-status-badge" class="badge">OPEN</span>
+            <span id="ticket-priority-badge" class="badge">MEDIUM</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start;">
+          <!-- Left Column: Details & Comments -->
+          <div>
+            <!-- Ticket Info Card -->
+            <div class="card">
+              <h3 id="ticket-title" style="font-size: 1.3rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">
+                Ticket Title
+              </h3>
+              <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 0.4rem;">
+                Description
+              </div>
+              <div id="ticket-desc" style="white-space: pre-wrap; font-size: 0.95rem; color: #334155; line-height: 1.6; background: #f8fafc; padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                Loading description...
+              </div>
+            </div>
+
+            <!-- Comments Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Activity & Discussion</h3>
+              </div>
+
+              <!-- Comments List -->
+              <div id="comments-list" class="comments-timeline">
+                <div style="text-align: center; padding: 1.5rem; color: #64748b;">Loading comments...</div>
+              </div>
+
+              <!-- New Comment Form -->
+              <form id="comment-form" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+                <div class="form-group">
+                  <label class="form-label" for="comment-message-input">Add a Comment</label>
+                  <textarea id="comment-message-input" class="form-control" rows="3"
+                            placeholder="Type an update, clarification, or response..." required></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end;">
+                  <button type="submit" class="btn btn-primary">Send Comment</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Right Column: Meta & Actions -->
+          <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Agent / Admin Workflow Actions -->
+            <div class="card" id="agent-actions-card" style="display: none;">
+              <!-- Populated by js/ticket-details.js -->
+            </div>
+
+            <!-- Metadata Card -->
+            <div class="card">
+              <h3 class="card-title" style="margin-bottom: 1rem;">Ticket Information</h3>
+              <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.85rem;">
+                <div>
+                  <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">Category</div>
+                  <div id="meta-category" style="font-weight: 600; color: var(--text-main);">-</div>
+                </div>
+                <div>
+                  <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">Department</div>
+                  <div id="meta-department" style="font-weight: 600; color: var(--text-main);">-</div>
+                </div>
+                <div>
+                  <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">Created By</div>
+                  <div id="meta-created-by" style="font-weight: 600; color: var(--text-main);">-</div>
+                </div>
+                <div>
+                  <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">Assigned To</div>
+                  <div id="meta-assigned-to" style="font-weight: 600; color: var(--text-main);">-</div>
+                </div>
+                <div>
+                  <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">Created Date</div>
+                  <div id="meta-created-at" style="color: var(--text-main);">-</div>
+                </div>
+                <div>
+                  <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">Resolved Date</div>
+                  <div id="meta-resolved-at" style="color: var(--text-main);">-</div>
+                </div>
+                <div>
+                  <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">Closed Date</div>
+                  <div id="meta-closed-at" style="color: var(--text-main);">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ticket-details.js"></script>
+</body>
+</html>

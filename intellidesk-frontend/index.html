@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliDesk — AI-Powered IT Service Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    // Immediate routing check
+    const token = localStorage.getItem("intellidesk_token");
+    if (token) {
+      window.location.href = "dashboard.html";
+    } else {
+      window.location.href = "login.html";
+    }
+  </script>
+</head>
+<body style="display:flex; align-items:center; justify-content:center; min-height:100vh; background:#0f172a; color:white; font-family:sans-serif;">
+  <div style="text-align:center;">
+    <h1 style="font-size:2rem; margin-bottom:0.5rem;">IntelliDesk</h1>
+    <p style="color:#94a3b8;">Redirecting to IT Service Portal...</p>
+  </div>
+</body>
+</html>

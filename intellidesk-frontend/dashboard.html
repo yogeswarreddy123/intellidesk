@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — IntelliDesk</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <div id="top-header-container"></div>
+
+      <main class="page-content">
+        <!-- Quick Action Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">IT Service Overview</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Welcome back to your IT service management workspace</p>
+          </div>
+          <div style="display: flex; gap: 0.75rem;">
+            <a href="create-ticket.html" class="btn btn-primary">
+              <span>+</span> New Ticket
+            </a>
+            <a href="ai-assistant.html" class="btn btn-outline">
+              <span>🤖</span> Ask AI Assistant
+            </a>
+            <a href="knowledge-base.html" class="btn btn-outline">
+              <span>📚</span> Knowledge Base
+            </a>
+          </div>
+        </div>
+
+        <!-- Role KPI Cards Grid -->
+        <div id="kpi-container" class="stats-grid">
+          <!-- Dynamically filled by js/dashboard.js -->
+        </div>
+
+        <!-- Recent Tickets Table -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Recent Tickets</h3>
+              <p class="card-subtitle">Latest support incidents and service requests</p>
+            </div>
+            <a href="tickets.html" class="btn btn-sm btn-outline">View All Tickets →</a>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ticket</th>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Created By</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="recent-tickets-tbody">
+                <tr><td colspan="7" style="text-align: center; padding: 2rem;">Loading tickets...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Activity Feed (Admin Only) -->
+        <div class="card" id="activity-card" style="display: none;">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Audit Activity Feed</h3>
+              <p class="card-subtitle">Recent administrative and system events</p>
+            </div>
+          </div>
+          <ul id="recent-activities-list" style="list-style: none; padding: 0;">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

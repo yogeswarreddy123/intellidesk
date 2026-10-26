@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Assistant — IntelliDesk</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <div id="top-header-container"></div>
+
+      <main class="page-content" style="max-width: 950px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">IntelliDesk AI Assistant</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">24/7 intelligent IT diagnosis, knowledge search, and automated ticket generation</p>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="clearChat()">Clear Chat</button>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container">
+          <div class="chat-header">
+            <div class="chat-header-info">
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #0ea5e9, #2563eb); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                🤖
+              </div>
+              <div>
+                <div style="font-weight: 700; font-size: 0.95rem;">IntelliDesk IT Copilot</div>
+                <div style="font-size: 0.72rem; color: #94a3b8;">Active • Connected to Knowledge Base</div>
+              </div>
+            </div>
+            <div class="status-pill" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">
+              <span class="dot" style="background: #34d399;"></span>
+              <span>Ready</span>
+            </div>
+          </div>
+
+          <!-- Messages scroll area -->
+          <div id="chat-messages" class="chat-messages">
+            <!-- Welcome message from AI -->
+            <div class="message ai">
+              <div class="message-avatar">🤖</div>
+              <div class="message-bubble">
+                <p>Hello! I am your <strong>IntelliDesk AI Assistant</strong>.</p>
+                <p>Describe any technical issue you are experiencing (e.g. <em>VPN errors, password lockout, slow Wi-Fi, printer malfunction</em>). I will search our company knowledge base, provide immediate troubleshooting steps, or help you log a categorized ticket directly to IT Support!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick suggestion chips -->
+          <div style="padding: 0.5rem 1.5rem; background: #f8fafc; border-top: 1px solid var(--border-light); display: flex; gap: 0.5rem; overflow-x: auto;">
+            <button class="btn btn-sm btn-outline" style="background: white; white-space: nowrap; font-size: 0.75rem;" onclick="sendQuickPrompt('My VPN is not connecting')">
+              ⚡ My VPN is not connecting
+            </button>
+            <button class="btn btn-sm btn-outline" style="background: white; white-space: nowrap; font-size: 0.75rem;" onclick="sendQuickPrompt('Office Wi-Fi keeps dropping on my laptop')">
+              📶 Wi-Fi keeps dropping
+            </button>
+            <button class="btn btn-sm btn-outline" style="background: white; white-space: nowrap; font-size: 0.75rem;" onclick="sendQuickPrompt('How do I reset my domain password?')">
+              🔑 Password reset steps
+            </button>
+            <button class="btn btn-sm btn-outline" style="background: white; white-space: nowrap; font-size: 0.75rem;" onclick="sendQuickPrompt('Printer queue is stuck and offline')">
+              🖨️ Printer troubleshooting
+            </button>
+          </div>
+
+          <!-- Input bar -->
+          <form id="chat-form" class="chat-input-area" onsubmit="handleChatSubmit(event)">
+            <input type="text" id="chat-input" class="form-control" style="border-radius: var(--radius-full); padding: 0.75rem 1.25rem;"
+                   placeholder="Describe your issue or ask a question... (e.g. VPN won't connect)" required autocomplete="off">
+            <button type="submit" id="chat-send-btn" class="btn btn-primary" style="border-radius: var(--radius-full); padding: 0 1.5rem;">
+              Send
+            </button>
+          </form>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!auth.requireAuth()) return;
+      auth.renderLayout("AI Assistant");
+    });
+
+    function sendQuickPrompt(text) {
+      document.getElementById("chat-input").value = text;
+      handleChatSubmit(new Event("submit"));
+    }
+
+    async function handleChatSubmit(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      const input = document.getElementById("chat-input");
+      const message = input.value.trim();
+      if (!message) return;
+
+      input.value = "";
+      appendUserMessage(message);
+
+      // Show typing indicator
+      const typingId = showTypingIndicator();
+
+      try {
+        const res = await api.post("/ai/ask", { message });
+        removeTypingIndicator(typingId);
+
+        if (res.success && res.data) {
+          appendAiMessage(res.data, message);
+        } else {
+          appendAiSimpleMessage("I encountered an issue analyzing your request. Please try again or create a ticket directly.");
+        }
+      } catch (err) {
+        removeTypingIndicator(typingId);
+        appendAiSimpleMessage("Sorry, I could not complete the request. Error: " + err.message);
+      }
+    }
+
+    function appendUserMessage(text) {
+      const container = document.getElementById("chat-messages");
+      const user = auth.getUser();
+      const initials = (user?.fullName || "ME").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+
+      const el = document.createElement("div");
+      el.className = "message user";
+      el.innerHTML = `
+        <div class="message-avatar">${initials}</div>
+        <div class="message-bubble">
+          <p>${escapeHtml(text)}</p>
+        </div>
+      `;
+      container.appendChild(el);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function appendAiSimpleMessage(text) {
+      const container = document.getElementById("chat-messages");
+      const el = document.createElement("div");
+      el.className = "message ai";
+      el.innerHTML = `
+        <div class="message-avatar">🤖</div>
+        <div class="message-bubble">
+          <p>${escapeHtml(text)}</p>
+        </div>
+      `;
+      container.appendChild(el);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function appendAiMessage(data, originalQuery) {
+      const container = document.getElementById("chat-messages");
+      const el = document.createElement("div");
+      el.className = "message ai";
+
+      // Formatted text
+      const formattedResponse = escapeHtml(data.response)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>');
+
+      const category = data.suggestedCategory || "Software";
+      const priority = data.suggestedPriority || "MEDIUM";
+
+      let createTicketUrl = `create-ticket.html?title=${encodeURIComponent(originalQuery)}&desc=${encodeURIComponent(originalQuery)}&categoryName=${encodeURIComponent(category)}&priority=${encodeURIComponent(priority)}`;
+
+      let actionButtons = `
+        <div class="chat-actions">
+          <button class="btn btn-sm btn-success" onclick="markIssueResolved(this)">
+            ✓ Yes, Issue Resolved
+          </button>
+          <a href="${createTicketUrl}" class="btn btn-sm btn-primary">
+            🎫 Create Ticket (${category} - ${priority})
+          </a>
+        </div>
+      `;
+
+      el.innerHTML = `
+        <div class="message-avatar">🤖</div>
+        <div class="message-bubble">
+          <div><p>${formattedResponse}</p></div>
+          ${actionButtons}
+        </div>
+      `;
+
+      container.appendChild(el);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function markIssueResolved(btn) {
+      const bubble = btn.closest(".message-bubble");
+      btn.parentElement.innerHTML = `
+        <div style="color:var(--success); font-weight:600; font-size:0.85rem; margin-top:0.5rem;">
+          ✓ Great! Glad your issue was resolved. Have a productive day!
+        </div>
+      `;
+    }
+
+    function showTypingIndicator() {
+      const container = document.getElementById("chat-messages");
+      const id = "typing-" + Date.now();
+      const el = document.createElement("div");
+      el.id = id;
+      el.className = "message ai";
+      el.innerHTML = `
+        <div class="message-avatar">🤖</div>
+        <div class="message-bubble" style="padding: 0.6rem 1rem;">
+          <div class="typing-indicator">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+        </div>
+      `;
+      container.appendChild(el);
+      container.scrollTop = container.scrollHeight;
+      return id;
+    }
+
+    function removeTypingIndicator(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    function clearChat() {
+      const container = document.getElementById("chat-messages");
+      container.innerHTML = `
+        <div class="message ai">
+          <div class="message-avatar">🤖</div>
+          <div class="message-bubble">
+            <p>Chat cleared. How can I assist you with your IT needs today?</p>
+          </div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

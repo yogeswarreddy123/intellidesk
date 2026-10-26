@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Ticket — IntelliDesk</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <div id="sidebar-container"></div>
+
+    <div class="main-wrapper">
+      <div id="top-header-container"></div>
+
+      <main class="page-content" style="max-width: 900px;">
+        <div style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">Create Support Ticket</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Submit an issue or service request to the IT team</p>
+        </div>
+
+        <div class="card" style="padding: 2rem;">
+          <form id="create-ticket-form">
+            <!-- Ticket Title -->
+            <div class="form-group">
+              <label class="form-label" for="ticket-title-input">
+                Issue Summary / Title *
+              </label>
+              <input type="text" id="ticket-title-input" class="form-control"
+                     placeholder="e.g. My laptop cannot connect to office Wi-Fi" required minlength="5" maxlength="150">
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                Between 5 and 150 characters. Be concise and specific.
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+              <label class="form-label" for="ticket-desc-input">
+                Detailed Description *
+              </label>
+              <textarea id="ticket-desc-input" class="form-control" rows="5"
+                        placeholder="Provide details, error codes, steps to reproduce, or symptoms..." required></textarea>
+            </div>
+
+            <!-- AI Suggestion Box -->
+            <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #0369a1; font-size: 0.9rem;">
+                  <span>🤖</span>
+                  <span>IntelliDesk AI Classification Engine</span>
+                </div>
+                <button type="button" id="ai-classify-btn" class="btn btn-sm btn-outline" style="background: white; border-color: #38bdf8; color: #0284c7;">
+                  ⚡ AI Suggest Category & Priority
+                </button>
+              </div>
+              <p style="font-size: 0.8rem; color: #0369a1; margin-bottom: 0;">
+                Click above to have our classification engine analyze your description and automatically suggest the best category and urgency level.
+              </p>
+
+              <!-- Suggestion Result Pill -->
+              <div id="ai-suggestion-result" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #7dd3fc;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                  <div>
+                    <span style="font-size: 0.85rem; font-weight: 600; color: #0f172a;">Suggested: </span>
+                    <span id="ai-sugg-cat" class="badge" style="background:#e0e7ff; color:#3730a3;">Network</span>
+                    <span id="ai-sugg-pri" class="badge priority-medium">MEDIUM</span>
+                    <p id="ai-sugg-reason" style="font-size: 0.75rem; color: #64748b; margin-top: 0.35rem;"></p>
+                  </div>
+                  <button type="button" id="accept-suggestion-btn" class="btn btn-sm btn-primary">
+                    Accept Suggestion
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category, Priority, Department Fields -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="ticket-category-select">Category *</label>
+                <select id="ticket-category-select" class="form-select" required>
+                  <option value="">Loading categories...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ticket-priority-select">Priority *</label>
+                <select id="ticket-priority-select" class="form-select" required>
+                  <option value="LOW">LOW</option>
+                  <option value="MEDIUM" selected>MEDIUM</option>
+                  <option value="HIGH">HIGH</option>
+                  <option value="CRITICAL">CRITICAL</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ticket-department-select">Department</label>
+                <select id="ticket-department-select" class="form-select">
+                  <option value="">Loading departments...</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem; border-top: 1px solid var(--border-light); padding-top: 1.25rem;">
+              <a href="tickets.html" class="btn btn-outline">Cancel</a>
+              <button type="submit" id="submit-ticket-btn" class="btn btn-primary" style="padding: 0.65rem 1.75rem;">
+                Create Ticket
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    let categoriesList = [];
+    let suggestedCategoryId = null;
+    let suggestedPriorityVal = null;
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!auth.requireAuth()) return;
+      auth.renderLayout("Create Ticket");
+
+      await loadDropdowns();
+
+      // Check URL query parameters (e.g. from AI assistant)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("title")) {
+        document.getElementById("ticket-title-input").value = urlParams.get("title");
+      }
+      if (urlParams.get("desc")) {
+        document.getElementById("ticket-desc-input").value = urlParams.get("desc");
+      }
+      if (urlParams.get("priority")) {
+        document.getElementById("ticket-priority-select").value = urlParams.get("priority");
+      }
+      if (urlParams.get("categoryName")) {
+        const catName = urlParams.get("categoryName").toLowerCase();
+        const matched = categoriesList.find(c => c.name.toLowerCase() === catName);
+        if (matched) {
+          document.getElementById("ticket-category-select").value = matched.id;
+        }
+      }
+
+      // AI Classification Button
+      document.getElementById("ai-classify-btn").addEventListener("click", runAiClassification);
+
+      // Accept suggestion button
+      document.getElementById("accept-suggestion-btn").addEventListener("click", () => {
+        if (suggestedCategoryId) {
+          document.getElementById("ticket-category-select").value = suggestedCategoryId;
+        }
+        if (suggestedPriorityVal) {
+          document.getElementById("ticket-priority-select").value = suggestedPriorityVal;
+        }
+        showToast("AI suggestion applied to form!", "success");
+      });
+
+      // Submit Form
+      document.getElementById("create-ticket-form").addEventListener("submit", submitTicket);
+    });
+
+    async function loadDropdowns() {
+      // Categories
+      try {
+        const catRes = await api.get("/categories");
+        if (catRes.success && catRes.data) {
+          categoriesList = catRes.data;
+          const catSelect = document.getElementById("ticket-category-select");
+          catSelect.innerHTML = `<option value="">-- Select Category --</option>` +
+            categoriesList.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+        }
+      } catch (e) {
+        console.error("Categories load error", e);
+      }
+
+      // Departments
+      try {
+        const deptRes = await api.get("/departments");
+        if (deptRes.success && deptRes.data) {
+          const deptSelect = document.getElementById("ticket-department-select");
+          deptSelect.innerHTML = `<option value="">-- Select Department --</option>` +
+            deptRes.data.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join("");
+        }
+      } catch (e) {
+        console.error("Departments load error", e);
+      }
+    }
+
+    async function runAiClassification() {
+      const title = document.getElementById("ticket-title-input").value.trim();
+      const desc = document.getElementById("ticket-desc-input").value.trim();
+
+      if (!title) {
+        showToast("Please enter an issue title first so AI can analyze it", "warning");
+        document.getElementById("ticket-title-input").focus();
+        return;
+      }
+
+      const btn = document.getElementById("ai-classify-btn");
+      btn.disabled = true;
+      btn.textContent = "Analyzing...";
+
+      try {
+        const res = await api.post("/ai/classify-ticket", { title, description: desc });
+        if (res.success && res.data) {
+          const c = res.data;
+          suggestedPriorityVal = c.suggestedPriority;
+          suggestedCategoryId = c.categoryId;
+
+          document.getElementById("ai-sugg-cat").textContent = c.suggestedCategory;
+          document.getElementById("ai-sugg-pri").textContent = c.suggestedPriority;
+          document.getElementById("ai-sugg-pri").className = `badge priority-${c.suggestedPriority.toLowerCase()}`;
+          document.getElementById("ai-sugg-reason").textContent = c.reasoning;
+
+          document.getElementById("ai-suggestion-result").style.display = "block";
+          showToast("AI Suggestion generated!", "success");
+        }
+      } catch (err) {
+        showToast("Classification error: " + err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "⚡ AI Suggest Category & Priority";
+      }
+    }
+
+    async function submitTicket(event) {
+      event.preventDefault();
+      const btn = document.getElementById("submit-ticket-btn");
+
+      const title = document.getElementById("ticket-title-input").value.trim();
+      const description = document.getElementById("ticket-desc-input").value.trim();
+      const categoryIdVal = document.getElementById("ticket-category-select").value;
+      const priority = document.getElementById("ticket-priority-select").value;
+      const deptIdVal = document.getElementById("ticket-department-select").value;
+
+      if (!title || !description || !categoryIdVal) {
+        showToast("Please fill in all required fields", "warning");
+        return;
+      }
+
+      const payload = {
+        title,
+        description,
+        categoryId: Number(categoryIdVal),
+        priority,
+        departmentId: deptIdVal ? Number(deptIdVal) : null
+      };
+
+      btn.disabled = true;
+      btn.textContent = "Submitting Ticket...";
+
+      try {
+        const res = await api.post("/tickets", payload);
+        if (res.success && res.data) {
+          showToast(`Ticket ${res.data.ticketNumber} created successfully!`, "success");
+          setTimeout(() => {
+            window.location.href = `ticket-details.html?id=${res.data.id}`;
+          }, 800);
+        }
+      } catch (err) {
+        showToast(err.message, "error");
+        btn.disabled = false;
+        btn.textContent = "Create Ticket";
+      }
+    }
+  </script>
+</body>
+</html>
